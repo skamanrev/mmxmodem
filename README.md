@@ -6,9 +6,10 @@
 
 ### Prelude
 
-This is a fork of <a href="https://github.com/gruvin/mmxmodem">gruvin/mmxmodem</aa>
+This is a fork of <a href="https://github.com/gruvin/mmxmodem">gruvin/mmxmodem</a>
 
-It modifies the original to use Python3 to use the pypi.org  <a href="http://packages.python.org/xmodem">xmodem</a> package
+It modifies the original to use Python3
+and to use the pypi.org  <a href="http://packages.python.org/xmodem">xmodem</a> package
 
 This code is designed to send/receive files to/from   <a href="https://geoffg.net/picomite.html">Picomite</a> running on a Raspberry Pi Pico. 
 

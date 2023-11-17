@@ -1,19 +1,19 @@
-#!/opt/local/bin/python
+#!/usr/local/bin/python3
 import sys
 from os import remove, rename, unlink
 from os.path import isfile, dirname, realpath
 from time import sleep
 import logging
 import serial
+from xmodem import XMODEM
 
 real_path = dirname(realpath(__file__))
 sys.path.insert(0, real_path + '/modules')
-from mmxmodem import XMODEM
 from mmconnect import mmconnect
 
 
 if len(sys.argv) < 3:
-  print 'Usage: ' + sys.argv[0] + ' <serial-port> <source-filename> [<local-filename>]\n'
+  print ('Usage: ' + sys.argv[0] + ' <serial-port> <source-filename> [<local-filename>]\n')
   quit()
 
 sp = sys.argv[1]
@@ -22,9 +22,9 @@ dfn = fn
 if len(sys.argv) == 4: dfn = sys.argv[3]
 
 try:
-    stream = file(dfn+'.incoming', 'wb')
+    stream = open(dfn+'.incoming', 'wb')
 except:
-    print 'Oops! Could not create local file %s\n' % (fn)
+    print ('Oops! Could not create local file %s\n' % (fn))
     quit()
     
 def getc(size, timeout=1):
@@ -45,14 +45,15 @@ log.addHandler(ch)
 
 s = mmconnect(sp)
 
-print "Maximite connected. Setting up XMODEM transfer ..."
+print ("Picomite connected. Setting up XMODEM transfer ...")
 
-s.write('xmodem send "' + fn + '"\r')
+xmodemSend='xmodem send "' + fn + '"\r'
+s.write(xmodemSend.encode())
 sleep(0.2)
 e = s.readline(); # our own command is echoed back first
 e = s.readline(); # should timeout if no error on MM side
 if e[:18] == "Error: Cannot":
-    print 'Oops! Remote file %s not found!' % (fn)
+    print ('Oops! Remote file %s not found!' % (fn))
     s.close()
     stream.close()
     remove(dfn+'.incoming')
@@ -61,7 +62,7 @@ if e[:18] == "Error: Cannot":
 sleep(0.5)
 s.flushInput()
 
-print 'Receiving  ' + fn + ' as ' + dfn + ' ...'
+print ('Receiving  ' + fn + ' as ' + dfn + ' ...')
 
 bytes = xmodem.recv(stream, quiet=0, retry=8)
 stream.close()
@@ -69,14 +70,13 @@ stream.close()
 if (bytes != None):
     if isfile(dfn): unlink(dfn)
     rename(dfn+'.incoming', dfn)
-    print "Done! (%d bytes received)\n" % (bytes)
+    print ("Done! (%d bytes received)\n" % (bytes))
 else:
-    print "There could be a problem :-(\n"
+    print ("There could be a problem :-(\n")
     if (bytes == 0):
         remove(dfn+'.incoming')
     else:
-        print "Partial(?) transfer retained in: %s.incoming" % (dfn)
+        print ("Partial(?) transfer retained in: %s.incoming" % (dfn))
     quit();
 
 s.close()
-

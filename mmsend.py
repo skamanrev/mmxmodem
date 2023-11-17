@@ -1,4 +1,4 @@
-#!/opt/local/bin/python
+#!/usr/local/bin/python3
 import sys
 from os import remove, rename, unlink
 from os.path import isfile, dirname, realpath
@@ -6,13 +6,14 @@ from time import sleep
 import logging
 import serial
 
+
 real_path = dirname(realpath(__file__))
 sys.path.insert(0, real_path + '/modules')
-from mmxmodem import XMODEM
+from xmodem import XMODEM
 from mmconnect import mmconnect
 
 if len(sys.argv) < 3:
-  print 'Usage: ' + sys.argv[0] + ' <serial-port> <filename> [<dest-filename>]\n'
+  print ('Usage: ' + sys.argv[0] + ' <serial-port> <filename> [<dest-filename>]\n')
   quit()
 
 sp = sys.argv[1]
@@ -20,10 +21,12 @@ fn = sys.argv[2]
 dfn = fn
 if len(sys.argv) == 4: dfn = sys.argv[3]
 
+xmodemStart='xmodem receive "' + dfn + '"\r'
+
 try:
-    stream = file(fn, 'rb')
+    stream = open(fn, 'rb')
 except:
-    print 'Oops! Could not open local file %s\n' % (fn)
+    print ('Oops! Could not open local file %s\n' % (fn))
     quit()
     
 def getc(size, timeout=1):
@@ -44,19 +47,19 @@ log.addHandler(ch)
 
 s = mmconnect(sp)
 
-print "Maximite connected. Setting up XMODEM transfer ..."
+print ("Maximite connected. Setting up XMODEM transfer ...")
 
-s.write('xmodem receive "' + dfn + '"\r')
+s.write(xmodemStart.encode())
 sleep(0.2)
 s.flushInput()
 
-print 'Sending  ' + fn + ' as ' + dfn + ' ...'
+print ('Sending  ' + fn + ' as ' + dfn + ' ...')
 
 status = xmodem.send(stream, quiet=0, retry=8)
 if (status):
-    print "Done!"
+    print ("Done!")
 else:
-    print "There could be a problem :-("
+    print ("There could be a problem :-(")
 
 stream.close()
 s.close()

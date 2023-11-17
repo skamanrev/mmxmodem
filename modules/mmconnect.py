@@ -10,6 +10,8 @@ STX='\x02'
 ACK='\x06'
 NAK='\x15'
 CAN='\x18'
+PROMPT='print "m""m""x"\r'
+promptRes='mmx'
 
 log.debug('opening serial port')
 def mmconnect(sp):
@@ -25,12 +27,13 @@ def mmconnect(sp):
 #    dsrdtr=1
         )
     except:
-      print 'ERROR: Could not access serial port ' + sp + '\n'
+      print ('ERROR: Could not access serial port ' + sp + '\n')
       quit()
 
     found = 0
     for a in range(1, 6):
         log.debug('Waiting for "... Maximite ..." [%d]', a)
+        print('Waiting for "... Maximite ..." [%d]', a)
         hello = ''
         timeout = time() + 2.0
         while (1):
@@ -57,11 +60,11 @@ def mmconnect(sp):
                 else:
                     hello += c
 
-        if hello.find('Maximite') != -1: 
+        if hello.find('') != -1: 
             found = 1
             break
         
-        s.write(NAK)
+        s.write(NAK.encode())
         s.flushInput()
         s.close()
         log.debug('closing serial port')
@@ -70,7 +73,7 @@ def mmconnect(sp):
         s.open()
 
     if found == 0:
-        print 'Expected "... Maximite ..." but got "' + hello + '"\nAborting.\n\n'
+        print ('Expected "... Maximite ..." but got "' + hello + '"\nAborting.\n\n')
         quit()
 
     log.info('Maximite connected. Checking for command prompt ...')
@@ -78,22 +81,23 @@ def mmconnect(sp):
 # now ensure that we are at a cmd prompt
     found = 0
     for n in range(1, 2):
-        s.write('\003');
+        s.write(b'\003');
         sleep(0.2)
         s.flushInput();
-        s.write('print "m""m""x"\r')
+        #s.write('print "m""m""x"\r')
+        s.write(PROMPT.encode())
         sleep(0.2)
         s.readline()
         hello = s.readline()
         log.debug('prompt? %s', hello)
-        if hello.find('mmx') != -1: 
+        if hello.find(promptRes.encode()) != -1: 
             found = 1
             break
         sleep(1.0)
         s.flushInput()
 
     if found == 0:
-        print 'Cannot seem to get to a command prompt :-(\nAborting\n\n'
+        print ('Cannot seem to get to a command prompt :-(\nAborting\n\n')
         quit()
 
     sleep(0.2)
